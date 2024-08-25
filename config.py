@@ -79,6 +79,7 @@ class NormalizeToMinusOneToOne(ImageOnlyTransform):
     
     
 #try to apply: rotation, flipping, 
+# transform apply on both img
 both_transform = A.Compose(
     [
         A.LongestMaxSize(max_size=IMAGE_SIZE, always_apply=True),
@@ -92,6 +93,7 @@ both_transform = A.Compose(
         A.Resize(width=IMAGE_SIZE, height=IMAGE_SIZE),
     ], is_check_shapes=False,  #is check shape is false to avoid error here 
     additional_targets={"target": "image", "target_gray": "image"},
+    # image 是一个format
 )
 
 

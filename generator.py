@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchinfo import summary
 import functools
 
+# 从BN到ResUnet --> 网上能搜到，按照网上的图可以create出来
 
 'BN_ReLU block'
 class BN_ReLU(nn.Module):
@@ -133,10 +134,11 @@ class ResUnet(nn.Module):
         
         
 
-
+#################################################################################################################
         
         
-        
+# Unet arch generator (version 1)
+# 用的是这个
 
 #advanced generator arch 
 class UnetGenerator(nn.Module):
@@ -222,6 +224,10 @@ class UnetSkipConnectionBlock(nn.Module):
         uprelu = nn.ReLU(True)
         upnorm = norm_layer(outer_nc)
 
+        # 3种情况
+        # intermediate layer 有个regular pattern ： 64， 32， 8...
+        # outermost有diff的pattern，有略微的不一样
+        # 
         if outermost:
             upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
@@ -260,7 +266,7 @@ class UnetSkipConnectionBlock(nn.Module):
 
 
 #################################################################################
-
+# 2nd version of Unet
 class Block(nn.Module):
     #down: True means in encoder part of generator, False means in decoder part
     #act: default activation function is relu
@@ -353,6 +359,7 @@ class Generator(nn.Module):
         return self.final_up(torch.cat((u7,d1), dim=1))
 
 #I maybe incorrect in the GAN architecture flowchart. Probably noise factor is not necessary but only the label image is required to provide (since we don't have multiclass but img itself is the label)
+# test the generator (whether corrrect tensor size, etc.)
 def test():
     x = torch.randn((1,3,256,256))
     model = Generator(in_channels=3, features=64)
@@ -364,6 +371,10 @@ if __name__ == "__main__":
     model = Generator(in_channels=3, features=64)
     # Print size of each layer of the model
     #summary(model, input_size=(1, 3, 256, 256))
+    # self_attn_layer_indices没搞懂，没有用到他，本来可以set[1] [2] [3]set layer， 1， 2， 3 self attn
+    # norm_layer = 一种norm 也可以算hyper parameter的一种
     model = UnetGenerator(input_nc=3, output_nc=3, num_downs=8, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, self_attn_layer_indices=[])
     summary(model, input_size=(1, 3, 256, 256))
+    # summary：让每一个打出output shape是什么样的
+    # 每一层layer的不一样的size
 

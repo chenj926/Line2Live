@@ -26,7 +26,7 @@ class GaussianNoise(nn.Module):           # Try noise just for real or just for 
             #print("Not in training mode, noise not added")
             return x
 
-class DiscriminatorWithNoise(nn.Module):
+# class DiscriminatorWithNoise(nn.Module):
     def __init__(self, activation=nn.LeakyReLU, std=0.3, std_decay_rate=0):
         super().__init__()
         self.std = std
@@ -65,7 +65,8 @@ class DiscriminatorWithNoise(nn.Module):
      
 
 
-
+# Nlayer 和Discriminator 一样
+# 分的patch不一样
 class NLayerDiscriminator(nn.Module):
     """Defines a PatchGAN discriminator"""
 
@@ -242,5 +243,5 @@ if __name__ == "__main__":
     
     model = NLayerDiscriminator(input_nc = 3+3, ndf = 64, norm_layer=nn.BatchNorm2d)
     summary(model, input_size=((1, 3, 256, 256), (1, 3, 256, 256)))
-        
+    # 两个input size: 因为一个真的一个generator
         

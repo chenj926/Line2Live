@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 import config
 from torchvision.transforms.functional import to_pil_image
 
-
+# multi 多了一个grey scale 的input
 class MapDataset_Multi_TestONLY(Dataset):
     def __init__(self, sketch_dir, target_dir):
         
@@ -55,6 +55,7 @@ class MapDataset_Multi_TestONLY(Dataset):
         sketch_img = config.transform_only_sketch(image=sketch_img)["image"]
         tar_img = config.transform_only_tar(image=tar_img)["image"]
         tar_gray = config.transform_only_tar(image=tar_gray)["image"]
+        # transform_only_xxxx 可以分开tar和sketch不同的hyperparameter to data argumentation, 目前是一样的
         
         return sketch_img, tar_img, tar_gray
 

@@ -45,6 +45,7 @@ def train_loop(d1, g1, g2, g3, loader, optimizer_d1, optimizer_g1, optimizer_g2,
             #D_fake_logits_gray = d1(x, y_fake_gray.detach())
             #print(f"D_real_logits version: {D_real_logits._version}, D_fake_logits_color version: {D_fake_logits_color._version}, D_fake_logits_gray version: {D_fake_logits_gray._version}")
 
+            # D too powerful, gradient vanishing
             ##############################################
             if config.STABILITY:
                 D_real_logits = torch.clamp(D_real_logits, min=1e-7, max=1-1e-7)
@@ -66,7 +67,7 @@ def train_loop(d1, g1, g2, g3, loader, optimizer_d1, optimizer_g1, optimizer_g2,
         d1.zero_grad()
         d1_scaler.scale(D_loss).backward()
     
-        
+        # deal with gradient vanishing
         if config.STABILITY:
             nn_utils.clip_grad_norm_(d1.parameters(), max_norm=1.0)
         
@@ -162,7 +163,7 @@ def train_loop(d1, g1, g2, g3, loader, optimizer_d1, optimizer_g1, optimizer_g2,
             continue
         
         optimizer_g3.zero_grad()
-        g3_scaler.scale(G3_loss).backward()
+        g3_scaler.scale(G3_loss).backward() # defualt structure
         
         if config.STABILITY:
             nn_utils.clip_grad_norm_(g3.parameters(), max_norm=1.0)
@@ -256,24 +257,26 @@ def main():
     #gen = Generator(in_channels=3).to(config.DEVICE)
     #gen2 = Generator(in_channels=3).to(config.DEVICE)
     
+    # 1 D
     disc = NLayerDiscriminator(input_nc = 3+3, ndf = 64, norm_layer=nn.BatchNorm2d).to(config.DEVICE)
     
     '''add noise on dis layer'''
     #disc = Discriminator(in_channels=3, use_noise=True, std=0.3, decay_rate=0).to(config.DEVICE)
     
+    # 3 G
     gen = UnetGenerator(input_nc=3, output_nc=3, num_downs=8, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, self_attn_layer_indices=[]).to(config.DEVICE)
     gen2 = UnetGenerator(input_nc=3, output_nc=3, num_downs=8, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, self_attn_layer_indices=[]).to(config.DEVICE)
     gen3 = UnetGenerator(input_nc=3, output_nc=3, num_downs=8, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, self_attn_layer_indices=[]).to(config.DEVICE)
     
     
-    
+
     #can configure different learning rate for gen and disc
     optimizer_disc = optim.Adam(disc.parameters(), lr=0.0002, betas=config.BETAS) #note betas is a play with momentum can chang here 
     optimizer_gen = optim.Adam(gen.parameters(), lr=0.0002, betas=config.BETAS)
     optimizer_gen2 = optim.Adam(gen2.parameters(), lr=0.0002, betas=config.BETAS)
     optimizer_gen3 = optim.Adam(gen3.parameters(), lr=0.0002, betas=config.BETAS)
     
-    
+    # losses
     #standard GAN loss
     BCE = nn.BCEWithLogitsLoss()
     L1_LOSS = nn.L1Loss()
@@ -402,7 +405,7 @@ def main():
     
     
     
-    
+    # float16 train更快
     #perform float16 training
     g1_scaler = torch.cuda.amp.GradScaler()
     g2_scaler = torch.cuda.amp.GradScaler()

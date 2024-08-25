@@ -5,6 +5,8 @@ from torch.utils.data import Dataset
 import config
 from torchvision.transforms.functional import to_pil_image
 
+# 看成img data loader
+# cosutamized img dataloader -- 既要load sketch，又要load img
 class MapDataset(Dataset):
     def __init__(self, sketch_dir, target_dir):
         
@@ -31,7 +33,8 @@ class MapDataset(Dataset):
 
 
 
-    
+    # 确保同时load两个img，确保order一样，就是in pair  
+    # 用idx来确保 （只要sketch和img的顺序是一样，就可以match上）  
     #get single img from dataset
     #remember to transform the img to respective others like resize, normalize, grayscale etc.. in config.py
     def __getitem__(self, idx):
@@ -48,7 +51,7 @@ class MapDataset(Dataset):
         
         #apply transform to both sketch and target
         aug = config.both_transform(image=sketch_img, target=tar_img)
-        sketch_img, tar_img = aug["image"], aug["target"]
+        sketch_img, tar_img = aug["image"], aug["target"] # default ["image"], avoid naming convention
         
             
         
